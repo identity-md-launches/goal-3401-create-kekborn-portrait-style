@@ -9,6 +9,9 @@ shoulder slope, frame aperture, labelled alignment marks, the 4:5 crop and the c
 Open it in any browser. The same numbers are in its `<metadata id="kekborn-registration">` block as JSON, so
 tools can read them.
 
+[catalog/foundation.json](catalog/foundation.json) records the accepted moss skin and Common wood frame,
+their SHA-256 hashes, the registration landmarks and the shared raster finish contract.
+
 ![Kekborn bust template](template/bust.svg)
 
 ---
@@ -43,15 +46,31 @@ Every layer PNG is the full 2048×2560 canvas, transparent outside its paint, so
 
 | Landmark | x, y | Notes |
 |---|---|---|
-| Far eye centre | 680, 936 | iris ≈ 60 px wide; socket ≈ 104 × 96 |
-| Near eye centre | 1040, 912 | iris ≈ 90 px wide; socket ≈ 156 × 144 |
+| Far eye centre | 680, 936 | iris ≈ 60 px wide; opaque dark eye bed ≈ 88 × 96, within the ≈ 104 × 96 socket envelope |
+| Near eye centre | 1040, 912 | iris ≈ 90 px wide; opaque dark eye bed ≈ 136 × 136, within the ≈ 156 × 144 socket envelope |
 | **Eye line** | through both eye centres | slope −1/15 (rises toward the near eye); crosses the aperture at (144, 971.7) and (1904, 854.4) |
-| Crown seat | 969, 680 | centre of headwear base; seat ellipse rx 150, ry 34 |
+| Crown seat | 969, 680 | nominal headwear anchor; seat ellipse rx 150, ry 34. Front band overlaps painted skull at y ≈ 700–748; see below |
+| Tympanum | 1238, 1046 | moss master's visible ear disc, behind the near eye; approximate ellipse rx 56, ry 62 |
 | Snout tip | 422, 1120 | the leftmost point of the head |
 | Mouth corners | 495, 1190 (far) · 1060, 1220 (near) | mouth line bows slightly downward between them |
 | Throat | 978, 1536 | top of the neck opening, base of the pleats |
 | Neck opening | ellipse centre (978,1600), rx 210, ry 64 | collars, sashes and gorgets close over it |
 | Shoulder peaks | 365, 1760 (far) · 1575, 1712 (near) | shoulder slope line joins them; the near shoulder is higher and wider |
+
+The registration reference is the accepted **[moss master](layers/skins/moss.png)**, not the schematic head outline.
+Both eye beds are **opaque umber paint**, not alpha holes. Their approximate dark cores are ellipses centred at the
+fixed eye centres: far rx 44, ry 48; near rx 68, ry 68. Bed edges are irregular brushwork. Paint each complete eye
+(iris, pupil and surrounding eye colour) over its bed, feathering under the existing raised lid; do not expect a
+background layer to show through. The iris sizes are design targets, not the full eye-layer footprint. Expression
+lids and spectacle/monocle rims follow these actual beds while the eye line stays fixed.
+
+The crown seat is an **alignment anchor**, not a guarantee of opaque skin at (969,680). The painted dome begins
+near y = 681 at its highest point and drops toward the sides. The front band of headwear must extend below the
+seat ellipse into the skull, typically y = 700–748 near the centre, with at least 20 px of painted overlap where
+the band meets the dome. Broaden/deepen its side returns to meet the curved skull; inspect over moss at 100% to
+avoid a transparent seam or a floating crown. Keep the band above the eye turrets. Do not shift the head or eye
+centres to accommodate headwear. Template eye beds, tympanum and crown-overlap guide describe this registration;
+the rest of the outline remains a schematic, not a replacement skin silhouette.
 
 ### 2.3 Reserved areas and clear space
 
@@ -62,8 +81,12 @@ Every layer PNG is the full 2048×2560 canvas, transparent outside its paint, so
 | Legendary plaque | (640,2420) → (940,2508) | — | engraved name plaque, Legendary frames only |
 
 Both shield boxes are 5:6. The heater-shield outline is the box with a pointed base: straight sides for the top
-5/9 of the height, curving to a point at the bottom centre. No headwear, prop, banner fold or frame ornament
-may enter either clear-space box. The tallest headwear must stay left of x = 1476 when its top is above y = 652.
+5/9 of the height, curving to a point at the bottom centre. These are **decoration reserves, not transparent
+cutouts**: the banner's opaque cloth and the frame's opaque rail continue underneath both shields and their clear
+space. The common frame is opaque in the rail reserve. Arms are painted over these substrates; outside the
+heater-shield silhouette the substrate remains visible. No headwear, prop, high-contrast banner fold or frame
+ornament may enter either clear-space box. Quiet cloth/wood texture is allowed underneath. The tallest headwear
+must stay left of x = 1476 when its top is above y = 652.
 
 ## 3. Palette
 
@@ -96,7 +119,7 @@ Derived values (layer painters may use these directly):
 | Ruby | `#8E1F2B` | gems |
 | Sapphire | `#2B4A7A` | gems, azure tincture |
 | Emerald | `#2F6B45` | gems |
-| Varnish tint | `#E0B870` | compositor varnish (multiply, low opacity) |
+| Varnish tint | `#E0B870` | compositor varnish (6% multiply, up to 7% in highlights) |
 | Craquelure | `#2A1E17` | compositor crack lines |
 
 Never use pure black `#000000`, pure white `#FFFFFF` or saturated primaries. Rare skins (see §5) may push hue
@@ -112,7 +135,7 @@ The Kekborn frog is its own design. Its parts are:
 - **Asymmetrical eye turrets.** The far turret is small and foreshortened, and it **breaks the silhouette** above
   the snout. The near turret is larger, sits inside the cranium outline and is ringed by a raised lid. Pupils are
   **horizontal bars** in amber/ochre irises: far iris ≈ 60 px, near ≈ 90 px.
-- **Visible tympanum** (ear disc) behind the near eye, at about (1150,1080).
+- **Visible tympanum** (ear disc) behind the near eye, at about (1238,1046) on the moss master.
 - **Low cranial dome** rising to the crown seat at (969,680); the back of the skull curves down into a heavy jowl.
 - **Pleated throat.** Five stacked transverse folds run from under the chin down to the neck opening, widening as
   they go down. Light side warm bone, shadow side forest.
@@ -153,12 +176,24 @@ The compositor stacks full-canvas transparent PNGs in this order and then runs t
 10. **Headwear and regalia** for the tier, seated on the crown seat
 11. **Props, front**: scroll, orb, gauntlet, tools held at the lower edge
 12. **Frame** for the tier, with the rail arms painted into the rail reserve (and the plaque on Legendary)
-13. **Shared finish (compositor only, applied once)**: warm varnish (multiply `#E0B870` at low opacity plus a slight
-    yellowing of highlights), fine craquelure (thin `#2A1E17` crack net, denser in the darks), and the frame's cast
+13. **Shared finish (compositor only, applied once)**: warm varnish (multiply `#E0B870` at 6% opacity plus up to
+    1% extra in highlights), fine craquelure (thin seeded `#2A1E17` crack net, more visible in the darks), and the frame's cast
     shadow on the aperture's top and left edges (frame light comes from the upper left, so the shadow falls inside the
     top-left of the opening).
 
 Layers must not bake in varnish, cracks or frame shadow. Otherwise the finish is doubled and samples stop matching.
+
+Raster contract: `finish(image, seedBytes)` is synchronous, mutates and returns the supplied straight-RGBA8 raster,
+and leaves every alpha byte unchanged, including partial coverage. Fully transparent pixels retain hidden RGB too.
+The finish uses stored sRGB display values without a colour-space conversion. Let `L` be the original paint's
+display-space luminance `(0.2126R + 0.7152G + 0.0722B) / 255`. Varnish multiply opacity is `0.06 + 0.01L²`.
+Cracks blend toward `#2A1E17` using a seed-derived fine antialiased net (roughly one master pixel wide), with
+maximum coverage 24/255, multiplied by `(1−L)²`. This suppresses cracks in highlights and makes the same net
+more visible in shadow paint; intersections do not accumulate ink. Very dark paint can pick up a faint warm ink tint.
+The shadow is clipped inside the aperture, reaches at most 23% darkening, and fades smoothly over 44 master pixels
+from the **top or left** inner edge. It does not add an independent shadow along the right or bottom edge, or on
+the frame rails. Aperture/shadow distances scale with preview size. Apply varnish, crack pigment, then shadow;
+round RGB only on write. A fixed input, size and nonempty seed gives identical PNG bytes in the same runtime.
 
 ## 7. Attire by category
 
@@ -183,8 +218,8 @@ All attire closes over the neck opening and follows the shoulder slope (365,1760
 | **Epic** | Gilded gold | Gold-leaf moulding with a carved acanthus and a red bole showing through worn gilding | gold coronet, chain of office |
 | **Legendary** | Ornate gold with gems and plaque | Deep gold frame with corner cartouches, cabochon ruby/sapphire/emerald gems and an engraved **plaque** at (640,2420)–(940,2508) | jewelled crown, sceptre or mantle clasp |
 
-Headwear must sit on the crown seat ellipse and stay clear of the banner-arms clear space. Every frame paints the same
-shield again in the rail reserve.
+Headwear uses the crown seat anchor and overlaps the actual skull as described in §2.2, while staying clear of the
+banner-arms clear space. Every frame paints the same shield again over the opaque rail in the rail reserve.
 
 ## 9. Do / don't
 
@@ -196,6 +231,8 @@ shield again in the rail reserve.
 | **Finish** | Visible oil strokes, broken colour, soft edges on turning forms | Smooth gradients, airbrush, vector flats, photo textures, glossy 3D renders |
 | **Silhouette** | Wedge snout, the far turret breaking the outline, a heavy jowl, pleated throat, and sloped shoulders | Round "cartoon" head, two equal eyes on top, thick lips, a human nose or ears: anything that reads as Pepe |
 | **Silhouette** | Headwear and props stay inside the aperture and out of both shield clear spaces | A crown poking into the banner arms, a prop crossing the frame rail, or a hood covering the near eye |
+| **Registration** | Cover the opaque umber eye beds with eye paint; overlap crown bands into the dome | Treating eye beds as holes, moving the eye line, or floating a crown above the painted skull |
+| **Heraldry** | Paint arms onto quiet opaque banner cloth and rail wood; leave those substrates beneath the clear space | Erasing rectangular alpha holes for shields, or putting decorative folds and carving through the arms |
 | **Palette** | Mix from the seven anchors; gold is painted gold leaf | Neon green, pure black or white, saturated primary red or blue |
 | **Light** | One upper-left key; shadows fall down-right on skin, cloth and props | Lights from below or behind, or conflicting cast shadows between layers |
 
@@ -210,6 +247,7 @@ the rail reserve (100 × 120).
 
 - [ ] PNG, 2048 × 2560, RGBA, transparent outside the paint, sRGB, no embedded finish
 - [ ] Head layers hit every landmark in §2.2 within ±4 px (eye centres ±2 px)
-- [ ] Nothing inside either shield clear space except the arms layers
+- [ ] Opaque banner/rail substrate continues beneath shield clear space; only the arms add decoration there
+- [ ] Eyes cover the actual opaque beds; crown band overlaps the painted dome without a transparent seam
 - [ ] Light from the upper left, palette from §3, visible brushwork
 - [ ] Layer checked over [template/bust.svg](template/bust.svg) at 50% opacity

@@ -31,6 +31,9 @@ const FRAME_APERTURE = Object.freeze({ x: 144, y: 144, width: 1760, height: 2224
  *
  * Call finish exactly once after the last layer, then encode. Finish mutates RGB
  * in place, preserves alpha, and uses the supplied seed bytes for crack geometry.
+ * It multiplies a restrained #E0B870 varnish, blends fine #2A1E17 cracks with
+ * visibility weighted toward dark paint, then casts the top/left rail shadow
+ * inward. Fully transparent pixels retain their hidden RGB samples as well.
  * The aperture scales proportionally on non-master rasters used for previews.
  * PNG decoding preserves RGB samples without applying embedded color profiles.
  * Encoding writes RGBA8 with no ancillary chunks or time-dependent metadata.
@@ -172,7 +175,7 @@ function crackMask(width, height, seed) {
   function link(start, end) {
     const middleX = (start.x + end.x) / 2 + (random() - 0.5) * spacing * 0.27;
     const middleY = (start.y + end.y) / 2 + (random() - 0.5) * spacing * 0.27;
-    const strength = 3 + random() * 6;
+    const strength = 10 + random() * 14;
     trace(mask, width, height, start.x, start.y, middleX, middleY, strength);
     trace(mask, width, height, middleX, middleY, end.x, end.y, strength);
   }
@@ -206,16 +209,27 @@ function finish(image, seed) {
       const i = pixel * 4;
       if (!data[i + 3]) continue;
       const masterX = (x + 0.5) / scaleX;
-      const distance = Math.min(masterX - left, right - masterX, masterY - top, bottom - masterY);
+      // The rails cast inward only from the top and left. Right/bottom bounds
+      // clip the shadow to the opening; they do not cast another shadow.
+      const inside = masterX >= left && masterX < right && masterY >= top && masterY < bottom;
+      const distance = Math.min(masterX - left, masterY - top);
       let shadow = 1;
-      if (distance >= 0 && distance < 44) {
+      if (inside && distance < 44) {
         const t = 1 - distance / 44;
         shadow -= 0.23 * t * t * (3 - 2 * t);
       }
-      const crack = cracks[pixel];
-      data[i] = Math.round(Math.max(0, (data[i] * 0.974 + 201 * 0.026) * shadow - crack));
-      data[i + 1] = Math.round(Math.max(0, (data[i + 1] * 0.974 + 145 * 0.026) * shadow - crack));
-      data[i + 2] = Math.round(Math.max(0, (data[i + 2] * 0.974 + 76 * 0.026) * shadow - crack));
+      // Display-space luminance of the pristine paint, independent of coverage.
+      // A little extra multiply in highlights gives the varnish its yellowing
+      // without an additive wash lifting the darks or erasing brushwork.
+      const luminance = (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+      const varnish = 0.06 + 0.01 * luminance * luminance;
+      const crack = cracks[pixel] / 255 * (1 - luminance) ** 2;
+      const red = data[i] * (1 - varnish + varnish * 224 / 255);
+      const green = data[i + 1] * (1 - varnish + varnish * 184 / 255);
+      const blue = data[i + 2] * (1 - varnish + varnish * 112 / 255);
+      data[i] = Math.round((red + (42 - red) * crack) * shadow);
+      data[i + 1] = Math.round((green + (30 - green) * crack) * shadow);
+      data[i + 2] = Math.round((blue + (23 - blue) * crack) * shadow);
     }
   }
   return image;

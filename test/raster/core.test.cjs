@@ -119,7 +119,7 @@ test('uses the same transparent source at different scales and clips placement',
   assert.throws(() => composite(dest, shield, { x: 1.5, y: 0, width: 4, height: 2 }), /integer/);
 });
 
-test('finish repeats from pristine input, preserves alpha and shades only inside the aperture', () => {
+test('finish repeats from pristine input, preserves alpha and shadows the top/left inside the aperture', () => {
   assert.deepEqual([MASTER_WIDTH, MASTER_HEIGHT], [2048, 2560]);
   assert.deepEqual(FRAME_APERTURE, { x: 144, y: 144, width: 1760, height: 2224 });
   // Half-scale aperture starts at x=72; a 44 master-pixel shadow at x=94 has faded.
@@ -140,8 +140,11 @@ test('finish repeats from pristine input, preserves alpha and shades only inside
   }
   assert.ok(pixel(a, 72, 500)[0] + 15 < pixel(a, 71, 500)[0]);
   assert.ok(pixel(a, 72, 500)[0] + 15 < pixel(a, 94, 500)[0]);
-  assert.ok(pixel(a, 951, 500)[0] + 15 < pixel(a, 952, 500)[0]);
-  assert.ok(pixel(a, 500, 1183)[0] + 15 < pixel(a, 500, 1184)[0]);
+  assert.ok(pixel(a, 500, 72)[0] + 15 < pixel(a, 500, 71)[0]);
+  assert.ok(pixel(a, 500, 72)[0] + 15 < pixel(a, 500, 94)[0]);
+  // These edges only clip the opening; neither casts an independent shadow.
+  assert.ok(Math.abs(pixel(a, 951, 500)[0] - pixel(a, 952, 500)[0]) <= 2);
+  assert.ok(Math.abs(pixel(a, 500, 1183)[0] - pixel(a, 500, 1184)[0]) <= 2);
   const [red, , blue] = pixel(a, 400, 500);
   assert.ok(red > blue);
 });

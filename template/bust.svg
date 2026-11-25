@@ -8,7 +8,8 @@ units are master pixels. The frog noble faces the viewer's left in three-quarter
 (skins, eyes, expressions, attire, headwear, props, backgrounds, banners, arms, frames) are drawn on this
 grid at 2048×2560 and must hit the landmarks below. This file is a guide, never composited into a portrait.</desc>
   <metadata id="kekborn-registration">{
-  "version": 1,
+  "version": 2,
+  "skinReference": "layers/skins/moss.png",
   "canvas": {"w": 2048, "h": 2560, "aspect": "4:5", "origin": "top-left", "x": "right", "y": "down"},
   "frameAperture": {"x0": 144, "y0": 144, "x1": 1904, "y1": 2368, "x1y1": "exclusive"},
   "aperture45Crop": {"x0": 144, "y0": 156, "x1": 1904, "y1": 2356, "x1y1": "exclusive"},
@@ -17,6 +18,7 @@ grid at 2048×2560 and must hit the landmarks below. This file is a guide, never
     "farEye":        {"x": 680,  "y": 936,  "irisW": 60},
     "nearEye":       {"x": 1040, "y": 912,  "irisW": 90},
     "crownSeat":     {"x": 969,  "y": 680},
+    "tympanum":      {"x": 1238, "y": 1046, "rx": 56, "ry": 62, "approximate": true},
     "snoutTip":      {"x": 422,  "y": 1120},
     "mouthFar":      {"x": 495,  "y": 1190},
     "mouthNear":     {"x": 1060, "y": 1220},
@@ -24,9 +26,20 @@ grid at 2048×2560 and must hit the landmarks below. This file is a guide, never
     "shoulderFar":   {"x": 365,  "y": 1760},
     "shoulderNear":  {"x": 1575, "y": 1712}
   },
+  "eyeBeds": {
+    "far": {"cx": 680, "cy": 936, "rx": 44, "ry": 48, "approximate": true, "alpha": 255},
+    "near": {"cx": 1040, "cy": 912, "rx": 68, "ry": 68, "approximate": true, "alpha": 255},
+    "use": "Opaque painted umber beds, not holes. Eye paint covers beds under raised lids; iris size is not the layer footprint."
+  },
+  "crownOverlap": {
+    "centralBand": {"x0": 900, "y0": 700, "x1": 1060, "y1": 748, "x1y1": "exclusive"},
+    "minimumPaintOverlap": 20,
+    "use": "Crown seat is an anchor, not a cut edge. Extend the front band and side returns into the actual moss dome; check for seams."
+  },
   "reserves": {
-    "bannerArms":    {"x0": 1500, "y0": 340,  "x1": 1740, "y1": 628,  "x1y1": "exclusive", "clearSpace": 24},
-    "railArms":      {"x0": 974,  "y0": 2404, "x1": 1074, "y1": 2524, "x1y1": "exclusive", "clearSpace": 12}
+    "bannerArms":    {"x0": 1500, "y0": 340,  "x1": 1740, "y1": 628,  "x1y1": "exclusive", "clearSpace": 24, "substrate": "opaque banner cloth"},
+    "railArms":      {"x0": 974,  "y0": 2404, "x1": 1074, "y1": 2524, "x1y1": "exclusive", "clearSpace": 12, "substrate": "opaque frame rail"},
+    "use": "Reserve decoration, not alpha: quiet substrate remains beneath arms and clear space; no folds, carving or other ornaments."
   },
   "light": "upper-left, key from (-1,-1)",
   "palette": {"umber": "#32251F", "forest": "#253E32", "moss": "#657044", "oxblood": "#682F38",
@@ -130,6 +143,10 @@ grid at 2048×2560 and must hit the landmarks below. This file is a guide, never
     <!-- eye sockets -->
     <ellipse id="far-eye-socket" cx="680" cy="936" rx="52" ry="48" fill="#14100D" fill-opacity="0.55" stroke="#D7C7A3" stroke-width="4"/>
     <ellipse id="near-eye-socket" cx="1040" cy="912" rx="78" ry="72" fill="#14100D" fill-opacity="0.55" stroke="#D7C7A3" stroke-width="4"/>
+    <!-- Actual moss master beds: opaque umber paint, not transparent cutouts.
+         Approximate dark cores; eye layers must blend out beneath the lids. -->
+    <ellipse id="far-eye-bed" cx="680" cy="936" rx="44" ry="48" fill="#32251F" stroke="#B48A47" stroke-width="2"/>
+    <ellipse id="near-eye-bed" cx="1040" cy="912" rx="68" ry="68" fill="#32251F" stroke="#B48A47" stroke-width="2"/>
     <!-- iris diameters: far 60, near 90 -->
     <circle id="far-iris" cx="680" cy="936" r="30" fill="#B48A47" fill-opacity="0.7" stroke="#F3E9D2" stroke-width="2"/>
     <circle id="near-iris" cx="1040" cy="912" r="45" fill="#B48A47" fill-opacity="0.7" stroke="#F3E9D2" stroke-width="2"/>
@@ -140,7 +157,7 @@ grid at 2048×2560 and must hit the landmarks below. This file is a guide, never
     <path id="snout-ridge" d="M430 1100 C 500 1020 560 975 610 960" class="formT"/>
     <path id="nostril" d="M474 1058 c 10 -8 22 -8 28 0" class="formT"/>
     <path id="mouth-line" d="M495 1190 C 620 1236 860 1254 1060 1220" fill="none" stroke="#682F38" stroke-width="6" stroke-linecap="round"/>
-    <ellipse id="tympanum" cx="1150" cy="1080" rx="56" ry="62" class="formT" style="fill:#253E32;fill-opacity:0.5"/>
+    <ellipse id="tympanum" cx="1238" cy="1046" rx="56" ry="62" class="formT" style="fill:#253E32;fill-opacity:0.5"/>
     <!-- pleated throat: 5 stacked folds, widening toward the neck opening -->
     <g id="throat-pleats">
       <path d="M560 1290 C 700 1320 880 1326 1110 1300" class="pleat"/>
@@ -151,6 +168,9 @@ grid at 2048×2560 and must hit the landmarks below. This file is a guide, never
     </g>
     <!-- crown seat ellipse (headwear base) -->
     <ellipse id="crown-seat" cx="969" cy="680" rx="150" ry="34" fill="none" stroke="#C9A45A" stroke-width="4" stroke-dasharray="10 6"/>
+    <!-- Front band must overlap actual skin below the nominal crown anchor. -->
+    <path id="crown-overlap" d="M900 720 Q969 680 1060 720 L1060 748 Q969 708 900 748 Z"
+          fill="#C9A45A" fill-opacity="0.25" stroke="#C9A45A" stroke-width="3" stroke-dasharray="6 6"/>
     <!-- skin brush direction: strokes follow the form, wrap the turrets -->
     <path d="M520 1040 C 600 990 680 980 760 1000 M820 1100 C 920 1060 1040 1060 1160 1120 M900 760 C 960 720 1060 720 1140 780 M1200 900 C 1230 980 1230 1060 1200 1140" class="stroke"/>
   </g>
@@ -161,13 +181,13 @@ grid at 2048×2560 and must hit the landmarks below. This file is a guide, never
     <rect id="banner-arms-reserve" x="1500" y="340" width="240" height="288" class="resv"/>
     <path d="M1500 340 H1740 V500 C 1740 580 1680 620 1620 628 C 1560 620 1500 580 1500 500 Z" fill="none" stroke="#F3E9D2" stroke-width="2" stroke-dasharray="6 6"/>
     <text x="1500" y="680" class="lbl">banner arms 1500,340 → 1740,628</text>
-    <text x="1500" y="706" class="lblS">240×288 (5:6) · clear space 24</text>
+    <text x="1500" y="706" class="lblS">240×288 · clear 24 · opaque cloth below</text>
 
     <rect x="962" y="2392" width="124" height="144" class="clear"/>
     <rect id="rail-arms-reserve" x="974" y="2404" width="100" height="120" class="resv"/>
     <path d="M974 2404 H1074 V2470 C 1074 2504 1050 2520 1024 2524 C 998 2520 974 2504 974 2470 Z" fill="none" stroke="#F3E9D2" stroke-width="2" stroke-dasharray="4 4"/>
     <text x="1100" y="2444" class="lbl">rail arms 974,2404 → 1074,2524</text>
-    <text x="1100" y="2472" class="lblS">100×120 (5:6) · same shield as banner · clear 12</text>
+    <text x="1100" y="2472" class="lblS">100×120 · same arms · clear 12 · opaque rail below</text>
     <text x="1100" y="2500" class="lblS">plaque (Legendary) sits left of shield: 640,2420 → 940,2508</text>
     <rect x="640" y="2420" width="300" height="88" fill="none" stroke="#C9A45A" stroke-width="2" stroke-dasharray="8 6"/>
   </g>
@@ -199,10 +219,16 @@ grid at 2048×2560 and must hit the landmarks below. This file is a guide, never
   <g id="landmarks">
     <use href="#crosshair" x="680" y="936"/>
     <text x="560" y="1036" class="lbl">far eye 680,936 · iris 60</text>
+    <text x="490" y="1062" class="lblS">opaque bed ≈88×96 · paint eyes over it</text>
     <use href="#crosshair" x="1040" y="912"/>
     <text x="1186" y="924" class="lbl">near eye 1040,912 · iris 90</text>
+    <text x="1186" y="952" class="lblS">opaque bed ≈136×136, not a hole</text>
     <use href="#crosshair" x="969" y="680"/>
     <text x="996" y="640" class="lbl">crown seat 969,680</text>
+    <text x="700" y="580" class="lblS">front band y700–748 · overlap dome ≥20px; extend side returns</text>
+    <use href="#crosshair" x="1238" y="1046"/>
+    <path d="M1266 1046 L1380 1110" class="mark"/>
+    <text x="1388" y="1120" class="lblS">tympanum ≈1238,1046</text>
     <use href="#crosshair" x="422" y="1120"/>
     <text x="196" y="1124" class="lbl">snout tip</text>
     <text x="196" y="1150" class="lblS">422,1120</text>
@@ -251,6 +277,6 @@ grid at 2048×2560 and must hit the landmarks below. This file is a guide, never
       <text x="1934" y="1260" class="lblS">warm bone</text>
     </g>
     <text x="144" y="2400" class="lblS">bottom rail y 2368–2560</text>
-    <text x="144" y="2548" class="lblS">finish pass (varnish, craquelure, frame shadow) is applied once by the compositor — never painted into layers</text>
+    <text x="144" y="2548" class="lblS">finish once: #E0B870 varnish · seeded #2A1E17 cracks in darks · inward shadow top/left only</text>
   </g>
 </svg>
