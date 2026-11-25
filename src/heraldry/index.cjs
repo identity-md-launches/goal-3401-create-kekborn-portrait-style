@@ -23,6 +23,8 @@ const METALS = [
   { name: 'or', hex: '#C9A45A' },
   { name: 'argent', hex: '#A7A9A4' },
 ];
+// style-guide.md §3 derived "Night umber": keyline around the charge and shield.
+const KEYLINE_HEX = '#14100D';
 const DIVISIONS = ['plain', 'pale', 'fess'];
 const ORDINARIES = ['cross', 'bend'];
 const CHARGES = ['estoile', 'trefoil', 'tower'];
@@ -69,14 +71,86 @@ function tint(raster, hex) {
   return raster;
 }
 
+// Decoded parts, cropped to the shield box and keyed by the source file's
+// sha256, so repeated builds decode each full-canvas layer once. The cache
+// holds untinted values; every use tints a fresh copy.
+const partCache = new Map();
+
+function cropToShield(raster) {
+  const out = createImage(SHIELD_WIDTH, SHIELD_HEIGHT);
+  for (let y = 0; y < SHIELD_HEIGHT; y++) {
+    const sy = y + SHIELD_BOX.y;
+    if (sy < 0 || sy >= raster.height) continue;
+    for (let x = 0; x < SHIELD_WIDTH; x++) {
+      const sx = x + SHIELD_BOX.x;
+      if (sx < 0 || sx >= raster.width) continue;
+      const from = (sy * raster.width + sx) * 4;
+      const to = (y * SHIELD_WIDTH + x) * 4;
+      for (let c = 0; c < 4; c++) out.data[to + c] = raster.data[from + c];
+    }
+  }
+  return out;
+}
+
 function loadPart(root, relFile, tinctureHex) {
   const relPath = path.join('layers/heraldry', relFile);
   const absPath = path.join(root, relPath);
   const bytes = fs.readFileSync(absPath);
   const sha256 = createHash('sha256').update(bytes).digest('hex');
-  const raster = decodePNG(bytes);
+  let cropped = partCache.get(sha256);
+  if (!cropped) {
+    const full = decodePNG(bytes);
+    if (full.width !== SHIELD_BOX.width || full.height !== SHIELD_BOX.height) {
+      throw new RangeError(`${relPath} must be a ${SHIELD_BOX.width}x${SHIELD_BOX.height} master-grid layer`);
+    }
+    cropped = cropToShield(full);
+    partCache.set(sha256, cropped);
+  }
+  const raster = { width: cropped.width, height: cropped.height, data: Buffer.from(cropped.data) };
   tint(raster, tinctureHex);
   return { relPath: relPath.split(path.sep).join('/'), sha256, raster };
+}
+
+/**
+ * Tincture rule for legibility (rule of tincture, with fimbriation):
+ * - field and secondary are colours; the ordinary is the seed's metal;
+ * - the charge is a third colour (never the field or secondary colour), so it
+ *   reads as dark paint on the metal ordinary;
+ * - the charge is fimbriated: a thin rim of the same metal surrounds it, and a
+ *   thin night-umber keyline surrounds the rim, so where the charge leaves the
+ *   ordinary its silhouette still reads against the colour field;
+ * - the shield is edged with a night-umber keyline on its outline and a thin
+ *   metal fillet just inside, so a field matching the banner cloth (gules on
+ *   oxblood, vert on vert, or on ochre) keeps a visible edge.
+ */
+function planArms(choices) {
+  const { tincture, division, ordinary, charge } = choices;
+  return [
+    ...DIVISION_PARTS[division](tincture.field.hex, tincture.secondary.hex),
+    { file: `ordinaries/${ordinary}.png`, tincture: tincture.metal.hex },
+    { file: `charges/${charge}-keyline.png`, tincture: KEYLINE_HEX },
+    { file: `charges/${charge}-fimbriation.png`, tincture: tincture.metal.hex },
+    { file: `charges/${charge}.png`, tincture: tincture.charge.hex },
+    { file: 'fields/edge-keyline.png', tincture: KEYLINE_HEX },
+    { file: 'fields/edge-fillet.png', tincture: tincture.metal.hex },
+  ];
+}
+
+// Paints a list of { file, tincture } parts, back to front, into a shield raster.
+function paintParts(parts, { root }) {
+  const image = createImage(SHIELD_WIDTH, SHIELD_HEIGHT);
+  const usedLayers = [];
+  for (const part of parts) {
+    const { relPath, sha256, raster } = loadPart(root, part.file, part.tincture);
+    composite(image, raster);
+    usedLayers.push({ path: relPath, sha256 });
+  }
+  return { image, usedLayers };
+}
+
+// Paints the arms for a complete choices object (as returned by buildArms).
+function paintArms(choices, { root }) {
+  return paintParts(planArms(choices), { root });
 }
 
 /**
@@ -105,37 +179,33 @@ function buildArms(seedBytes, { root }) {
   const division = DIVISIONS[draw(seedBytes, 'division', DIVISIONS.length)];
   const ordinary = ORDINARIES[draw(seedBytes, 'ordinary', ORDINARIES.length)];
   const charge = CHARGES[draw(seedBytes, 'charge', CHARGES.length)];
-
-  const planned = [
-    ...DIVISION_PARTS[division](field.hex, secondary.hex),
-    { file: `ordinaries/${ordinary}.png`, tincture: metal.hex },
-    { file: `charges/${charge}.png`, tincture: metal.hex },
-  ];
-
-  const image = createImage(SHIELD_WIDTH, SHIELD_HEIGHT);
-  const usedLayers = [];
-  for (const part of planned) {
-    const { relPath, sha256, raster } = loadPart(root, part.file, part.tincture);
-    composite(image, raster, { x: -SHIELD_BOX.x, y: -SHIELD_BOX.y, width: SHIELD_BOX.width, height: SHIELD_BOX.height });
-    usedLayers.push({ path: relPath, sha256 });
-  }
+  // Charge tincture: its own labelled draw among the colours that are neither
+  // the field nor the secondary, so the charge never repeats a field colour.
+  const chargeOptions = COLOURS.filter((colour) => colour !== field && colour !== secondary);
+  const chargeTincture = chargeOptions[draw(seedBytes, 'tincture/charge', chargeOptions.length)];
 
   const choices = {
     tincture: {
       field: { name: field.name, hex: field.hex },
       secondary: { name: secondary.name, hex: secondary.hex },
       metal: { name: metal.name, hex: metal.hex },
+      charge: { name: chargeTincture.name, hex: chargeTincture.hex },
     },
     division,
     ordinary,
     charge,
   };
 
+  const { image, usedLayers } = paintArms(choices, { root });
   return { image, choices, usedLayers };
 }
 
 module.exports = {
   buildArms,
+  paintArms,
+  paintParts,
+  planArms,
+  KEYLINE_HEX,
   SHIELD_WIDTH,
   SHIELD_HEIGHT,
   COLOURS,

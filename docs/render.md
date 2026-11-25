@@ -57,7 +57,10 @@ Every `catalog/*.json` (read in file-name order) is
 IDs are unique across files; `path` is relative to the root and must stay inside it; `tier`, `category` and
 `requiresEyes` may be a string or an array. An asset without `tier`/`category` fits every tier/category.
 Every drawn layer must be a full-canvas 2048×2560 PNG (`E_ASSET_SIZE`) and exist (`E_MISSING_FILE`); all
-files are checked before painting. Records with a slot not listed below are ignored.
+files are checked before painting. Records with a slot not listed below are ignored. `rarity` must be one of
+`common`, `uncommon`, `rare`, `epic`, `legendary`; any other value stops the load with `E_CATALOG`. A file may carry
+other top-level fields beside `schema` and `assets` (`catalog/foundation.json` keeps its registration document and
+registers `skin.moss` and `frame.common` in its `assets`).
 
 ## Stack (back to front)
 
@@ -99,3 +102,5 @@ is identical between checkouts.
 
 `node --test test/compositor/render.test.cjs` builds a private fixture root in the OS temp dir (catalog, layer PNGs,
 stub heraldry, raster shim) and does not depend on the shared library.
+`node --test test/compositor/real-catalog.test.cjs` loads the real `catalog/` folder and selects layers for all twelve
+`sample-inputs/NN.json`, so a catalog file the loader rejects or an asset the samples need but no file registers fails a test.

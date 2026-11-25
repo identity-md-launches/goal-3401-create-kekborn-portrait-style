@@ -145,7 +145,7 @@ function checkPackage(root, paths) {
     const png = `samples/${id}.png`;
     if (!files.has(png)) throw new Error(`Missing ${png}`);
     const inputPath = requireOne(files, [
-      `samples/inputs/${id}.json`, `samples/${id}.input.json`, `inputs/${id}.json`,
+      `sample-inputs/${id}.json`, `samples/inputs/${id}.json`, `samples/${id}.input.json`, `inputs/${id}.json`,
     ], `Sample ${id} input`);
     const sidecarPath = requireOne(files, [
       `samples/${id}.json`, `samples/${id}.sidecar.json`, `samples/${id}.png.json`,
